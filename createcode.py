@@ -1,0 +1,21 @@
+import types
+code = types.CodeType(
+	0,
+	0,
+	0,
+	0,
+	3,
+	0,
+	b'\x80\x00^{t\x00R\x01t\x01]\x02!\x00]\x014\x01\x00\x00\x00\x00\x00\x00\x1f\x00R\x02#\x00',
+	(123, 'cef', None),
+	('x', 'y', 'print'),
+	(),
+	'test2.py',
+	'<module>',
+	'<module>',
+	1,
+	b'\x00\xff\x02\x01\x04\x01\x04\x01',
+	b'',
+	(),
+	(),
+)

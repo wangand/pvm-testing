@@ -1,0 +1,4 @@
+  0           RESUME                   0
+
+  1           LOAD_CONST               0 (None)
+              RETURN_VALUE
