@@ -1,4 +1,16 @@
 import types
+import _imp
+import os
+import marshal
+
+MAGIC_NUMBER = _imp.pyc_magic_number_token.to_bytes(4, 'little')
+bitfield = b'\x00\x00\x00\x00'
+moddate = int(os.path.getmtime('test2.py')).to_bytes(4, 'little')
+filesize = os.path.getsize('test2.py').to_bytes(4, 'little')
+
+header = MAGIC_NUMBER + bitfield + moddate + filesize
+print(header)
+
 code = types.CodeType(
 	0,
 	0,
@@ -19,3 +31,9 @@ code = types.CodeType(
 	(),
 	(),
 )
+
+payload = marshal.dumps(code)
+print(payload)
+with open('test2x.pyc', 'wb') as f:
+	f.write(header)
+	f.write(payload)
