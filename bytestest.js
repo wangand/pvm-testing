@@ -4,6 +4,32 @@ var examples = [
   "python": String.raw`b'+\x0e\r\n'`,
   "int": 168627755,
  },
+ {
+  "base": "AAAAAA==",
+  "python": String.raw`b'\x00\x00\x00\x00'`,
+  "int": 0,
+ },
+ { 
+  "base": "sYP+aQ==",
+  "python": String.raw`b'\xb1\x83\xfei'`,
+  "int": 1778287537,
+ },
+ { 
+  "base": "GwAAAA==",
+  "python": String.raw`b'\x1b\x00\x00\x00'`,
+  "int": 27,
+ },
+ { 
+  "base": "gABee3QAUgF0AV0CIQBdATQBAAAAAAAAHwBSAiMA",
+  "python": String.raw`b'\x80\x00^{t\x00R\x01t\x01]\x02!\x00]\x014\x01\x00\x00\x00\x00\x00\x00\x1f\x00R\x02#\x00'`,
+  "int": undefined,
+ },
+ { 
+  "base": "",
+  "python": String.raw`b''`,
+  "int": undefined,
+ },
+
 ]
 
 function bytestoint(bytes){
