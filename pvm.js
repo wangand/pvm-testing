@@ -11,7 +11,7 @@ const data = fs.readFileSync(infile,'utf8');
 var newcode = JSON.parse(data);
 const bytecode = Uint8Array.fromBase64(newcode.code);
 
-const consts = newcode.consts;
+var consts = newcode.consts;
 const names = newcode.names;
 const varnames = newcode.varnames;
 const freevars = newcode.freevars;
@@ -25,6 +25,17 @@ for(var i=0; i<(bytecode.length-1); i+=2){
  program.push(temp);
 }
 
+// Special Symbols
+Py_None = {s:'Py_None'};
+
+// Account for python language symbols
+for (var i=0; i<consts.length; i++){
+ if(consts[i]===null){
+  consts[i] = Py_None;
+ } 
+}
+console.log(consts);
+
 // Stack and Globals etc.
 var stack = [];
 var globals = {};
@@ -32,6 +43,8 @@ var builtins = {};
 pvm_load_builtins();
 
 run();
+
+pvm_builtin_print(['meow', 'meow'],2);
 
 // ***************
 // functions below
@@ -72,6 +85,35 @@ function pvm_RESUME(arg){
  console.log("pvm_resume");
 }
 
-function pvm_builtin_print(){
- console.log("pvm builtin print");
+function pvm_builtin_print(objects, objects_length, sep, end, file, flush){
+ // Defaults
+ if(sep===undefined){
+  sep = ' ';
+ }
+ if(end===undefined){
+  end = '\n';
+ }
+ if(file===undefined){
+  file = Py_None;
+ }
+ if(flush===undefined){
+  flush = false;
+ }
+
+ // ignore file for now
+ 
+ if(sep === Py_None){
+  sep = '';
+ }
+ if(end === Py_None){
+  end = '';
+ }
+ 
+ for(var i=0; i<objects_length; i++){
+  if(i > 0){
+   process.stdout.write(sep);
+  }
+  process.stdout.write(objects[i]);
+ }
+ process.stdout.write(end);
 }
