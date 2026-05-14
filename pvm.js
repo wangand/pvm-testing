@@ -65,13 +65,13 @@ function run(){
 
 function lookup(op){
  const op_table = {
-  0: undefined,
-  31: undefined,
-  33: undefined,
-  35: undefined,
-  52: undefined,
-  82: undefined,
-  93: undefined,
+  0: pvm_CACHE,
+  31: pvm_POP_TOP,
+  33: pvm_PUSH_NULL,
+  35: pvm_RETURN_VALUE,
+  52: pvm_CALL,
+  82: pvm_LOAD_CONST,
+  93: pvm_LOAD_NAME,
   128: pvm_RESUME,
  }
  return op_table[op];
@@ -83,6 +83,34 @@ function pvm_load_builtins(){
 
 function pvm_RESUME(arg){
  console.log("pvm_resume");
+}
+
+function pvm_CACHE(arg){
+ console.log("pvm_CACHE");
+}
+
+function pvm_POP_TOP(arg){
+ console.log("pvm_POP_TOP");
+}
+
+function pvm_PUSH_NULL(arg){
+ console.log("pvm_PUSH_NULL");
+}
+
+function pvm_RETURN_VALUE(arg){
+ console.log("pvm_RETURN_VALUE");
+}
+
+function pvm_CALL(arg){
+ console.log("pvm_CALL");
+}
+
+function pvm_LOAD_CONST(arg){
+ console.log("pvm_LOAD_CONST");
+}
+
+function pvm_LOAD_NAME(arg){
+ console.log("pvm_LOAD_NAME");
 }
 
 function pvm_builtin_print(objects, objects_length, sep, end, file, flush){
