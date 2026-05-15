@@ -5,6 +5,8 @@ if (process.argv.length < 3){
  process.exit(1);	
 }
 
+var debug = false;
+
 // Load from json file
 const infile = process.argv[2];
 const data = fs.readFileSync(infile,'utf8');
@@ -34,7 +36,6 @@ for (var i=0; i<consts.length; i++){
   consts[i] = Py_None;
  } 
 }
-console.log(consts);
 
 // Stack and Globals etc.
 var stack = [];
@@ -56,7 +57,9 @@ function run(){
    func(arg);
   }
   
-  console.log(op, arg, func);
+  if(debug){
+   console.log(op, arg, func);
+  }
   pc++;
  }
 }
@@ -122,7 +125,9 @@ function pvm_CALL(arg){
 function pvm_LOAD_CONST(arg){
  var to_push = consts[arg];
  stack.push(to_push);
- console.log(stack);
+ if(debug){
+  console.log(stack);
+ }
 }
 
 function pvm_LOAD_NAME(arg){
@@ -135,8 +140,9 @@ function pvm_LOAD_NAME(arg){
  if(name in builtins){
   stack.push(builtins[name]);
  } 
-
- console.log(stack);
+ if(debug){
+  console.log(stack);
+ }
 }
 
 function pvm_builtin_print(objects, objects_length, sep, end, file, flush){
