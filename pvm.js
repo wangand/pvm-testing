@@ -44,8 +44,6 @@ pvm_load_builtins();
 
 run();
 
-pvm_builtin_print(['meow', 'meow'],2);
-
 // ***************
 // functions below
 function run(){
@@ -82,35 +80,63 @@ function pvm_load_builtins(){
 }
 
 function pvm_RESUME(arg){
- console.log("pvm_resume");
+ // No op for now
 }
 
 function pvm_CACHE(arg){
- console.log("pvm_CACHE");
+ // No op for now
 }
 
 function pvm_POP_TOP(arg){
- console.log("pvm_POP_TOP");
+ stack.pop();
 }
 
 function pvm_PUSH_NULL(arg){
- console.log("pvm_PUSH_NULL");
+ stack.push(null);
 }
 
 function pvm_RETURN_VALUE(arg){
- console.log("pvm_RETURN_VALUE");
+ var val = stack.pop();
+ // Rest of this op later
 }
 
 function pvm_CALL(arg){
- console.log("pvm_CALL");
+ // Default behavior
+ var arglist = [];
+ for(var i=0; i<arg; i++){
+  arglist.push(stack.pop());
+ }
+ var null_or_self = stack.pop();
+ var callable = stack.pop();
+
+ switch(callable){
+  // Kludge for print
+  case pvm_builtin_print:
+   pvm_builtin_print(arglist, arglist.length, undefined, undefined, undefined, undefined);
+   break; 
+  default:
+   console.log("Defaulting");
+ }
 }
 
 function pvm_LOAD_CONST(arg){
- console.log("pvm_LOAD_CONST");
+ var to_push = consts[arg];
+ stack.push(to_push);
+ console.log(stack);
 }
 
 function pvm_LOAD_NAME(arg){
- console.log("pvm_LOAD_NAME");
+ var name = names[arg];
+
+ // check locals
+ // check globals
+ 
+ // check builtins
+ if(name in builtins){
+  stack.push(builtins[name]);
+ } 
+
+ console.log(stack);
 }
 
 function pvm_builtin_print(objects, objects_length, sep, end, file, flush){
