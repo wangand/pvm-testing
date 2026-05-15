@@ -1,2 +1,4 @@
-a = max(1,2,3)
-b = max(100,200)
+def return_one():
+	return 1
+
+print(return_one())

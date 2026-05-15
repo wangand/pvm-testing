@@ -1,3 +1,1 @@
-x = 123
-y = "cef"
-print(y)
+print("hello","and","world")
