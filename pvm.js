@@ -109,6 +109,7 @@ function pvm_CALL(arg){
  for(var i=0; i<arg; i++){
   arglist.push(stack.pop());
  }
+ arglist.reverse();
  var null_or_self = stack.pop();
  var callable = stack.pop();
 
