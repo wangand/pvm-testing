@@ -37,7 +37,7 @@ def newcode_to_code(newcode):
 		newcode['stacksize'],
 		newcode['flags'],
 		b642b(newcode['code']),
-		tuple(newcode['consts']),
+		list_to_tuple(newcode['consts']),
 		tuple(newcode['names']),
 		tuple(newcode['varnames']),
 		newcode['filename'],
@@ -53,6 +53,15 @@ def newcode_to_code(newcode):
 
 def b642b(b64):
 	return base64.b64decode(b64)
+
+def list_to_tuple(l):
+        pre_ret = []
+        for e in l:
+                if isinstance(e, list):
+                        pre_ret.append(list_to_tuple(e))
+                else:
+                        pre_ret.append(e)
+        return tuple(pre_ret)
 
 def header_to_str(header):
 	magic = b642b(header['magic'])
