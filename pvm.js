@@ -139,8 +139,12 @@ function pvm_CALL_KW(arg){
 
  // Keyword behavior
  var keywords = {};
+ const first_kw_pos = arg - keyword_tuple.length;
  for(var i=0; i<keyword_tuple.length; i++){
-  keywords[keyword_tuple[i]] = arglist.pop();
+  keywords[keyword_tuple[i]] = arglist[i+first_kw_pos];
+ }
+ for(var i=0; i<keyword_tuple.length; i++){
+  arglist.pop();
  }
  
  switch(callable){
