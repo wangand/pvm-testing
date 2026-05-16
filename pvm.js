@@ -137,12 +137,23 @@ function pvm_CALL_KW(arg){
  var null_or_self = stack.pop();
  var callable = stack.pop();
 
- console.log(arglist);
-
+ // Keyword behavior
+ var keywords = {};
+ for(var i=0; i<keyword_tuple.length; i++){
+  keywords[keyword_tuple[i]] = arglist.pop();
+ }
+ 
  switch(callable){
   // Kludge for print
   case pvm_builtin_print:
-   pvm_builtin_print(arglist, arglist.length, undefined, undefined, undefined, undefined);
+   pvm_builtin_print(
+    arglist,
+    arglist.length,
+    keywords['sep'],
+    keywords['end'],
+    keywords['file'],
+    keywords['flush']
+   );
    break;
   default:
    console.log("Default function call");
