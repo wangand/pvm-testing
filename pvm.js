@@ -71,6 +71,7 @@ function lookup(op){
   33: pvm_PUSH_NULL,
   35: pvm_RETURN_VALUE,
   52: pvm_CALL,
+  55: pvm_CALL_KW,
   82: pvm_LOAD_CONST,
   93: pvm_LOAD_NAME,
   128: pvm_RESUME,
@@ -119,8 +120,33 @@ function pvm_CALL(arg){
    pvm_builtin_print(arglist, arglist.length, undefined, undefined, undefined, undefined);
    break; 
   default:
-   console.log("Defaulting");
+   console.log("Default function call");
  }
+}
+
+function pvm_CALL_KW(arg){
+ // Collect keyword tuple
+ var keyword_tuple = stack.pop();
+
+ // Default behavior
+ var arglist = [];
+ for(var i=0; i<arg; i++){
+  arglist.push(stack.pop());
+ }
+ arglist.reverse();
+ var null_or_self = stack.pop();
+ var callable = stack.pop();
+
+ console.log(arglist);
+
+ switch(callable){
+  // Kludge for print
+  case pvm_builtin_print:
+   pvm_builtin_print(arglist, arglist.length, undefined, undefined, undefined, undefined);
+   break;
+  default:
+   console.log("Default function call");
+ } 
 }
 
 function pvm_LOAD_CONST(arg){
