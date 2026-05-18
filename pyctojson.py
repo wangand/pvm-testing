@@ -3,6 +3,7 @@ import py_compile
 import marshal
 import json
 import base64
+import types
 
 def main():
 	if len(sys.argv) < 2:
@@ -24,21 +25,34 @@ def main():
 		size = f.read(4)
 		code = marshal.load(f)
 	
-	newcode = code_to_dict(magic, flags, moddate, size, code)
+	newcode = pyc_to_dict(magic, flags, moddate, size, code)
 	print(newcode)
 	with open(jsonfile, "w") as f:
 		json.dump(newcode, f)
 
-def code_to_dict(magic, flags, moddate, size, code):
-	def b64s(bytes):
-		return base64.b64encode(bytes).decode('utf-8')
-	retval = {
+def b64s(bytes):
+	return base64.b64encode(bytes).decode('utf-8')
+
+def pyc_to_dict(magic, flags, moddate, size, code):
+	header = {
 		"header": {
 			"magic": b64s(magic),
 			"flags": b64s(flags),
 			"moddate": b64s(moddate),
 			"size": b64s(size),
-		},
+		}
+	}
+	code = code_to_dict(code)
+	return header | code
+
+def code_to_dict(code):
+	new_consts = []
+	for c in code.co_consts:
+		if isinstance(c, types.CodeType):
+			new_consts.append(code_to_dict(c))
+		else:
+			new_consts.append(c)
+	retval = {
 		"argcount": code.co_argcount,
 		"posonlyargcount": code.co_posonlyargcount,
 		"kwonlyargcount": code.co_kwonlyargcount,
@@ -46,7 +60,7 @@ def code_to_dict(magic, flags, moddate, size, code):
 		"stacksize": code.co_stacksize,
 		"flags": code.co_flags,
 		"code": b64s(code.co_code),
-		"consts": code.co_consts,
+		"consts": new_consts,
 		"names": code.co_names,
 		"varnames": code.co_varnames,
 		"filename": code.co_filename,
