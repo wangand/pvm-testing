@@ -55,13 +55,15 @@ def b642b(b64):
 	return base64.b64decode(b64)
 
 def list_to_tuple(l):
-        pre_ret = []
-        for e in l:
-                if isinstance(e, list):
-                        pre_ret.append(list_to_tuple(e))
-                else:
-                        pre_ret.append(e)
-        return tuple(pre_ret)
+	pre_ret = []
+	for e in l:
+		if isinstance(e, list):
+			pre_ret.append(list_to_tuple(e))
+		elif isinstance(e, types.CodeType):
+			pre_ret.append(newcode_to_code(e))
+		else:
+			pre_ret.append(e)
+	return tuple(pre_ret)
 
 def header_to_str(header):
 	magic = b642b(header['magic'])
