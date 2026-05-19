@@ -59,7 +59,7 @@ def list_to_tuple(l):
 	for e in l:
 		if isinstance(e, list):
 			pre_ret.append(list_to_tuple(e))
-		elif isinstance(e, types.CodeType):
+		elif isinstance(e, dict):
 			pre_ret.append(newcode_to_code(e))
 		else:
 			pre_ret.append(e)
