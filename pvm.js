@@ -11,32 +11,44 @@ var debug = false;
 const infile = process.argv[2];
 const data = fs.readFileSync(infile,'utf8');
 var newcode = JSON.parse(data);
-const bytecode = Uint8Array.fromBase64(newcode.code);
 
-var consts = newcode.consts;
-const names = newcode.names;
-const varnames = newcode.varnames;
-const freevars = newcode.freevars;
-const cellvars = newcode.cellvars;
+// Special Symbols
+Py_None = {s:'Py_None'};
 
 // Program
 function bc_to_bcarg(bc){
  var bcarg = [];
  for(var i=0; i<(bc.length-1); i+=2){
-  var temp = [bytecode[i], bytecode[i+1]];
+  var temp = [bc[i], bc[i+1]];
   bcarg.push(temp);
  }
  return bcarg;
 }
 
-// Special Symbols
-Py_None = {s:'Py_None'};
+function create_frame(code){
+ const bytecode = Uint8Array.fromBase64(code.code);
+ var retval = {
+  program: bc_to_bcarg(bytecode),
+  consts: code.consts,
+  names: code.names,
+  varnames: code.varnames,
+  freevars: code.freevars,
+  cellvars: code.cellvars,
+  pc: 0,
+  stack: [],
+  locals: {},
+  globals: {},
+  builtins: pvm_load_builtins(),
+ }
 
-// Account for python language symbols
-for (var i=0; i<consts.length; i++){
- if(consts[i]===null){
-  consts[i] = Py_None;
- } 
+ // Account for python language symbols
+ for (var i=0; i<retval.consts.length; i++){
+  if(retval.consts[i]===null){
+   retval.consts[i] = Py_None;
+  } 
+ }
+
+ return retval;
 }
 
 // Set up frame stack
@@ -44,13 +56,7 @@ var entry_frame = {};
 var framestack = [entry_frame];
 
 // Set up first frame
-framestack.push({
- program: bc_to_bcarg(bytecode),
- pc: 0,
- stack: [],
- globals: {},
- builtins: pvm_load_builtins(),
-});
+framestack.push(create_frame(newcode));
 
 // Global frame pointer
 var fp = framestack.length-1;
@@ -87,6 +93,8 @@ function lookup(op){
   55: pvm_CALL_KW,
   82: pvm_LOAD_CONST,
   93: pvm_LOAD_NAME,
+  94: pvm_LOAD_SMALL_INT,
+  116: pvm_STORE_NAME,
   128: pvm_RESUME,
  }
  return op_table[op];
@@ -98,8 +106,18 @@ function pvm_load_builtins(){
  }
 }
 
+function pvm_STORE_NAME(arg){
+ var frame = framestack[fp];
+ var name = frame.names[arg];
+ frame.locals[name] = frame.stack.pop();
+}
+
 function pvm_RESUME(arg){
  // No op for now
+}
+
+function pvm_LOAD_SMALL_INT(arg){
+ framestack[fp].stack.push(Number(arg));
 }
 
 function pvm_CACHE(arg){
@@ -183,22 +201,28 @@ function pvm_CALL_KW(arg){
 }
 
 function pvm_LOAD_CONST(arg){
- var to_push = consts[arg];
- framestack[fp].stack.push(to_push);
+ var frame = framestack[fp];
+ var to_push = frame.consts[arg];
+ frame.stack.push(to_push);
  if(debug){
-  console.log(stack);
+  console.log(frame.stack);
  }
 }
 
 function pvm_LOAD_NAME(arg){
- var name = names[arg];
  var frame = framestack[fp];
+ var name = frame.names[arg];
 
  // check locals
+ if(name in frame.locals){
+  console.log("found in locals");
+ }
  // check globals
- 
+ else if(name in frame.globals){
+  console.log("found in globals");
+ }
  // check builtins
- if(name in frame.builtins){
+ else if(name in frame.builtins){
   frame.stack.push(frame.builtins[name]);
  } 
  if(debug){
@@ -234,7 +258,7 @@ function pvm_builtin_print(objects, objects_length, sep, end, file, flush){
   if(i > 0){
    process.stdout.write(sep);
   }
-  process.stdout.write(objects[i]);
+  process.stdout.write(String(objects[i]));
  }
  process.stdout.write(end);
 }
