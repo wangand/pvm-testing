@@ -20,11 +20,13 @@ const freevars = newcode.freevars;
 const cellvars = newcode.cellvars;
 
 // Program
-var program = [];
-var pc = 0;
-for(var i=0; i<(bytecode.length-1); i+=2){
- var temp = [bytecode[i], bytecode[i+1]];
- program.push(temp);
+function bc_to_bcarg(bc){
+ var bcarg = [];
+ for(var i=0; i<(bc.length-1); i+=2){
+  var temp = [bytecode[i], bytecode[i+1]];
+  bcarg.push(temp);
+ }
+ return bcarg;
 }
 
 // Special Symbols
@@ -37,30 +39,41 @@ for (var i=0; i<consts.length; i++){
  } 
 }
 
-// Stack and Globals etc.
-var stack = [];
-var globals = {};
-var builtins = {};
-pvm_load_builtins();
+// Set up frame stack
+var entry_frame = {};
+var framestack = [entry_frame];
+
+// Set up first frame
+framestack.push({
+ program: bc_to_bcarg(bytecode),
+ pc: 0,
+ stack: [],
+ globals: {},
+ builtins: pvm_load_builtins(),
+});
+
+// Global frame pointer
+var fp = framestack.length-1;
 
 run();
 
 // ***************
 // functions below
 function run(){
- while(pc<program.length){
-  var op = program[pc][0];
-  var arg = program[pc][1];
+ var frame = framestack[fp];
+ var program = frame.program;
+ while(frame.pc<frame.program.length){
+  var op = program[frame.pc][0];
+  var arg = program[frame.pc][1];
   var func = lookup(op);
   
   if(func!==undefined){
    func(arg);
   }
-  
   if(debug){
    console.log(op, arg, func);
   }
-  pc++;
+  frame.pc++;
  }
 }
 
@@ -80,7 +93,9 @@ function lookup(op){
 }
 
 function pvm_load_builtins(){
- builtins['print'] = (pvm_builtin_print);
+ return {
+  'print': pvm_builtin_print,
+ }
 }
 
 function pvm_RESUME(arg){
@@ -92,27 +107,28 @@ function pvm_CACHE(arg){
 }
 
 function pvm_POP_TOP(arg){
- stack.pop();
+ framestack[fp].stack.pop();
 }
 
 function pvm_PUSH_NULL(arg){
- stack.push(null);
+ framestack[fp].stack.push(null);
 }
 
 function pvm_RETURN_VALUE(arg){
- var val = stack.pop();
+ var val = framestack[fp].stack.pop();
  // Rest of this op later
 }
 
 function pvm_CALL(arg){
+ var frame = framestack[fp];
  // Default behavior
  var arglist = [];
  for(var i=0; i<arg; i++){
-  arglist.push(stack.pop());
+  arglist.push(frame.stack.pop());
  }
  arglist.reverse();
- var null_or_self = stack.pop();
- var callable = stack.pop();
+ var null_or_self = frame.stack.pop();
+ var callable = frame.stack.pop();
 
  switch(callable){
   // Kludge for print
@@ -125,17 +141,19 @@ function pvm_CALL(arg){
 }
 
 function pvm_CALL_KW(arg){
+ var frame = framestack[fp];
+
  // Collect keyword tuple
- var keyword_tuple = stack.pop();
+ var keyword_tuple = frame.stack.pop();
 
  // Default behavior
  var arglist = [];
  for(var i=0; i<arg; i++){
-  arglist.push(stack.pop());
+  arglist.push(frame.stack.pop());
  }
  arglist.reverse();
- var null_or_self = stack.pop();
- var callable = stack.pop();
+ var null_or_self = frame.stack.pop();
+ var callable = frame.stack.pop();
 
  // Keyword behavior
  var keywords = {};
@@ -166,7 +184,7 @@ function pvm_CALL_KW(arg){
 
 function pvm_LOAD_CONST(arg){
  var to_push = consts[arg];
- stack.push(to_push);
+ framestack[fp].stack.push(to_push);
  if(debug){
   console.log(stack);
  }
@@ -174,13 +192,14 @@ function pvm_LOAD_CONST(arg){
 
 function pvm_LOAD_NAME(arg){
  var name = names[arg];
+ var frame = framestack[fp];
 
  // check locals
  // check globals
  
  // check builtins
- if(name in builtins){
-  stack.push(builtins[name]);
+ if(name in frame.builtins){
+  frame.stack.push(frame.builtins[name]);
  } 
  if(debug){
   console.log(stack);
