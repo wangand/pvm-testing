@@ -89,7 +89,9 @@ function run(){
    frame.pc++;
   }
   else{
-   console.log('increment false');
+   if(debug===true){
+    console.log('increment false');
+   }
    increment = true;
   }
  }
@@ -201,6 +203,7 @@ function pvm_CALL(arg){
    var newframe = create_frame(callable.code);
    framestack.push(newframe);
    fp++;
+   increment = false;
  }
 }
 
