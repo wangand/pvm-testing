@@ -7,6 +7,9 @@ if (process.argv.length < 3){
 
 var debug = false;
 
+// for returning
+var increment = true;
+
 // Load from json file
 const infile = process.argv[2];
 const data = fs.readFileSync(infile,'utf8');
@@ -52,7 +55,7 @@ function create_frame(code){
 }
 
 // Set up frame stack
-var entry_frame = {};
+var entry_frame = {stack:[], program:[]};
 var framestack = [entry_frame];
 
 // Set up first frame
@@ -77,15 +80,25 @@ function run(){
    func(arg);
   }
   if(debug){
-   console.log(op, arg, func);
+   console.log(op, arg, func, fp);
   }
-  frame.pc++;
+  // First op will not be run fix later
+  frame = framestack[fp]; // allows for function calls
+  program = frame.program;
+  if(increment===true){
+   frame.pc++;
+  }
+  else{
+   console.log('increment false');
+   increment = true;
+  }
  }
 }
 
 function lookup(op){
  const op_table = {
   0: pvm_CACHE,
+  23: pvm_MAKE_FUNCTION,
   31: pvm_POP_TOP,
   33: pvm_PUSH_NULL,
   35: pvm_RETURN_VALUE,
@@ -116,6 +129,34 @@ function pvm_RESUME(arg){
  // No op for now
 }
 
+function pvm_MAKE_FUNCTION(arg){
+ var frame = framestack[fp];
+ var code = frame.stack.pop();
+ var function_object = {
+  pvm_type: "function",
+  
+  globals: {},
+  builtins: {},
+  name: '',
+  qualname: '',
+  code: code,
+  defaults: [],
+  kwdefaults: {},
+  closure: [],
+  
+  doc: undefined,
+  dict: undefined,
+  weakreflist: undefined,
+  module: undefined,
+  annotations: undefined,
+  annotate: undefined,
+  typeparams: undefined,
+  vectorcall: undefined,
+  func_version: undefined,
+ }
+ frame.stack.push(function_object);
+}
+
 function pvm_LOAD_SMALL_INT(arg){
  framestack[fp].stack.push(Number(arg));
 }
@@ -134,7 +175,10 @@ function pvm_PUSH_NULL(arg){
 
 function pvm_RETURN_VALUE(arg){
  var val = framestack[fp].stack.pop();
- // Rest of this op later
+ fp--;
+ frame = framestack[fp];
+ frame.stack.push(val);
+ //increment = false;
 }
 
 function pvm_CALL(arg){
@@ -154,7 +198,9 @@ function pvm_CALL(arg){
    pvm_builtin_print(arglist, arglist.length, undefined, undefined, undefined, undefined);
    break; 
   default:
-   console.log("Default function call");
+   var newframe = create_frame(callable.code);
+   framestack.push(newframe);
+   fp++;
  }
 }
 
@@ -215,18 +261,18 @@ function pvm_LOAD_NAME(arg){
 
  // check locals
  if(name in frame.locals){
-  console.log("found in locals");
+  frame.stack.push(frame.locals[name]);
  }
  // check globals
  else if(name in frame.globals){
-  console.log("found in globals");
+  frame.stack.push(frame.globals[name]);
  }
  // check builtins
  else if(name in frame.builtins){
   frame.stack.push(frame.builtins[name]);
  } 
  if(debug){
-  console.log(stack);
+  console.log(frame.stack);
  }
 }
 
