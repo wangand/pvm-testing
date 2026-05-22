@@ -1,4 +1,4 @@
 def increment(num):
 	return num+1
 
-print(increment(1))
+print(increment(256))
