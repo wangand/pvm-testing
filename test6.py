@@ -1,4 +1,4 @@
-def increment(num):
-	return num+1
+def identity(num):
+	return num
 
-print(increment(256))
+print(identity(255))
