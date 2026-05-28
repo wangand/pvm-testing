@@ -42,6 +42,7 @@ function create_frame(code){
   locals: {},
   globals: {},
   builtins: pvm_load_builtins(),
+  locals_plus: [],
  }
 
  // Account for python language symbols
@@ -107,6 +108,7 @@ function lookup(op){
   52: pvm_CALL,
   55: pvm_CALL_KW,
   82: pvm_LOAD_CONST,
+  86: pvm_LOAD_FAST_BORROW,
   93: pvm_LOAD_NAME,
   94: pvm_LOAD_SMALL_INT,
   116: pvm_STORE_NAME,
@@ -125,6 +127,12 @@ function pvm_STORE_NAME(arg){
  var frame = framestack[fp];
  var name = frame.names[arg];
  frame.locals[name] = frame.stack.pop();
+}
+
+function pvm_LOAD_FAST_BORROW(arg){
+ var frame = framestack[fp];
+ var locals_plus = frame.locals_plus;
+ frame.stack.push(locals_plus);
 }
 
 function pvm_RESUME(arg){
@@ -201,6 +209,7 @@ function pvm_CALL(arg){
    break; 
   default:
    var newframe = create_frame(callable.code);
+   newframe.locals_plus = arglist;
    framestack.push(newframe);
    fp++;
    increment = false;
