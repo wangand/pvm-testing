@@ -105,6 +105,7 @@ function lookup(op){
   31: pvm_POP_TOP,
   33: pvm_PUSH_NULL,
   35: pvm_RETURN_VALUE,
+  44: pvm_BINARY_OP,
   52: pvm_CALL,
   55: pvm_CALL_KW,
   82: pvm_LOAD_CONST,
@@ -121,6 +122,25 @@ function pvm_load_builtins(){
  return {
   'print': pvm_builtin_print,
  }
+}
+
+function pvm_NB_ADD(){
+ var frame = framestack[fp];
+ var op1 = frame.stack.pop();
+ var op2 = frame.stack.pop();
+ frame.stack.push(Number(op1)+Number(op2));
+}
+
+function pvm_BINARY_OP_lookup(bop){
+ const bop_table = {
+  0: pvm_NB_ADD,
+ }
+ return bop_table[bop];
+}
+
+function pvm_BINARY_OP(arg){
+ var callable = pvm_BINARY_OP_lookup(arg);
+ callable();
 }
 
 function pvm_STORE_NAME(arg){
