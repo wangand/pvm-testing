@@ -102,16 +102,19 @@ function lookup(op){
  const op_table = {
   0: pvm_CACHE,
   23: pvm_MAKE_FUNCTION,
+  28: pvm_NOT_TAKEN,
   31: pvm_POP_TOP,
   33: pvm_PUSH_NULL,
   35: pvm_RETURN_VALUE,
   44: pvm_BINARY_OP,
   52: pvm_CALL,
   55: pvm_CALL_KW,
+  74: pvm_IS_OP,
   82: pvm_LOAD_CONST,
   86: pvm_LOAD_FAST_BORROW,
   93: pvm_LOAD_NAME,
   94: pvm_LOAD_SMALL_INT,
+  100: pvm_POP_JUMP_IF_FALSE,
   116: pvm_STORE_NAME,
   128: pvm_RESUME,
  }
@@ -122,6 +125,35 @@ function pvm_load_builtins(){
  return {
   'print': pvm_builtin_print,
  }
+}
+
+function pvm_IS_OP(arg){
+ var frame = framestack[fp];
+ var invert = arg;
+ var right = frame.stack.pop();
+ var left = frame.stack.pop();
+ 
+ if(invert!==1){
+  frame.stack.push(right===left);
+ }
+ else{
+  frame.stack.push(right!==left);
+ }
+}
+
+function pvm_POP_JUMP_IF_FALSE(arg){
+ var frame = framestack[fp];
+ var delta = arg;
+
+ var falsable = frame.stack.pop();
+ if(falsable===false){
+  console.log("jumping", delta+1);
+  frame.pc += delta+1;
+ }
+}
+
+function pvm_NOT_TAKEN(arg){
+ // Do nothing code used by the interpeter to record branch events
 }
 
 function pvm_NB_ADD(){
