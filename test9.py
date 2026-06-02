@@ -1,4 +1,4 @@
-n = 5
+n = 4
 while n < 5:
-	n += 1
+	n = n + 1
 	print(n)

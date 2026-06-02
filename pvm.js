@@ -111,6 +111,7 @@ function lookup(op){
   55: pvm_CALL_KW,
   56: pvm_COMPARE_OP,
   74: pvm_IS_OP,
+  75: pvm_JUMP_BACKWARDS,
   82: pvm_LOAD_CONST,
   86: pvm_LOAD_FAST_BORROW,
   93: pvm_LOAD_NAME,
@@ -161,6 +162,14 @@ function pvm_IS_OP(arg){
  }
 }
 
+function pvm_JUMP_BACKWARDS(arg){
+ var frame = framestack[fp];
+ var delta = arg;
+ 
+ console.log("jumping back", delta-1);
+ frame.pc -= delta-1;
+}
+
 function pvm_POP_JUMP_IF_FALSE(arg){
  var frame = framestack[fp];
  var delta = arg;
@@ -183,9 +192,22 @@ function pvm_NB_ADD(){
  frame.stack.push(Number(op1)+Number(op2));
 }
 
+function pvm_NB_INPLACE_ADD(){
+ var frame = framestack[fp];
+ var right = frame.stack.pop();
+ var left = frame.stack.pop();
+ console.log("INPLACE_ADD", left, right); 
+
+ var left_val = frame.locals[left];
+ var result = Number(left_val) + Number(right);
+ frame.locals[left] = result;
+ frame.stack.push(result);
+}
+
 function pvm_BINARY_OP_lookup(bop){
  const bop_table = {
   0: pvm_NB_ADD,
+  13: pvm_NB_INPLACE_ADD,
  }
  return bop_table[bop];
 }
