@@ -109,6 +109,7 @@ function lookup(op){
   44: pvm_BINARY_OP,
   52: pvm_CALL,
   55: pvm_CALL_KW,
+  56: pvm_COMPARE_OP,
   74: pvm_IS_OP,
   82: pvm_LOAD_CONST,
   86: pvm_LOAD_FAST_BORROW,
@@ -126,6 +127,25 @@ function pvm_load_builtins(){
   'print': pvm_builtin_print,
  }
 }
+
+function pvm_COMPARE_OP(arg){
+ var comp_lookup = {
+   0: function(x,y){return x<y},
+   1: function(x,y){return x<=y},
+   2: function(x,y){return x==y},
+   3: function(x,y){return x!=y},
+   4: function(x,y){return x>y},
+   5: function(x,y){return x>=y},
+ }
+ var comp_op = comp_lookup[arg>>5];
+ 
+ var frame = framestack[fp];
+ var right = frame.stack.pop();
+ var left = frame.stack.pop();
+ var result = comp_op(left,right);
+ frame.stack.push(result);
+}
+
 
 function pvm_IS_OP(arg){
  var frame = framestack[fp];
